@@ -16,8 +16,6 @@ const App = (() => {
   let macrosChart   = null;
   let pieChart      = null;
   let ringChart     = null;
-  let deferredInstall = null;
-
   // Fasting state
   let fastSession      = null;   // active fast object from server
   let fastInterval     = null;   // setInterval handle
@@ -1430,42 +1428,7 @@ const App = (() => {
     });
   }
 
-  // ─── PWA Install Prompt ────────────────────────────────────────
 
-  window.addEventListener('beforeinstallprompt', e => {
-    e.preventDefault();
-    deferredInstall = e;
-    // Show banner after 3s if not already installed
-    if (!window.matchMedia('(display-mode: standalone)').matches) {
-      setTimeout(showInstallBanner, 3000);
-    }
-  });
-
-  function showInstallBanner() {
-    if (!deferredInstall || document.getElementById('install-banner')) return;
-    const banner = document.createElement('div');
-    banner.id = 'install-banner';
-    banner.className = 'install-banner';
-    banner.innerHTML = `
-      <span>📲 <strong>Install NeoNutri</strong> for the best experience</span>
-      <button class="btn-primary" onclick="App.installPWA()">Install</button>
-      <button class="icon-btn" onclick="document.getElementById('install-banner').remove()">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-        </svg>
-      </button>`;
-    document.body.appendChild(banner);
-  }
-
-  async function installPWA() {
-    if (!deferredInstall) return;
-    deferredInstall.prompt();
-    const { outcome } = await deferredInstall.userChoice;
-    if (outcome === 'accepted') {
-      deferredInstall = null;
-      document.getElementById('install-banner')?.remove();
-    }
-  }
 
   // ─── Utils ─────────────────────────────────────────────────────
   function dataURItoBlob(uri) {
@@ -1507,7 +1470,6 @@ const App = (() => {
     openCamera, capturePhoto, retakePhoto, handleFileUpload,
     analyzeFood, updateAmount, logFood, deleteLog,
     loadCharts, saveProfile,
-    installPWA,
     // Fasting
     toggleFast, cancelFast, selectProtocol,
     // Weight goal
