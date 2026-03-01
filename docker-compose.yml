@@ -1,7 +1,7 @@
 services:
   app:
     build: .
-    container_name: nutrisnap
+    container_name: neonutri
     restart: unless-stopped
     ports:
       - "${PORT:-3000}:3000"
@@ -14,7 +14,7 @@ services:
       - MCP_PORT=3001
     volumes:
       # Persist the SQLite database
-      - nutrisnap_data:/app/data
+      - neonutri_data:/app/data
     healthcheck:
       test: ["CMD", "wget", "-qO-", "http://localhost:3000/api/health"]
       interval: 30s
@@ -23,5 +23,5 @@ services:
       retries: 3
 
 volumes:
-  nutrisnap_data:
+  neonutri_data:
     driver: local
