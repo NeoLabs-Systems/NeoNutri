@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <meta name="theme-color" content="#0a0a0f" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="NeoNutri" />
+  <meta name="description" content="Self-hosted AI-powered nutrition tracking app" />
+
+  <title>NeoNutri</title>
+
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/icons/icon-192.svg" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.svg" />
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+
+  <link rel="stylesheet" href="/css/style.css?v=4" />
+</head>
+<body>
+
+<!-- ═══════════════════════════════ AUTH SCREEN ═══════════════════════════════ -->
+<div id="auth-screen" class="screen active">
+  <div class="login-wrap">
+    <div class="login-card">
+
+      <div class="logo">
+        <div class="logo-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <span class="logo-text">NeoNutri</span>
+      </div>
+
+      <div class="tab-row">
+        <button class="tab-btn active" onclick="App.showLogin()">Sign In</button>
+        <button class="tab-btn" onclick="App.showRegister()">Create Account</button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="login-form" class="form-section active">
+        <div id="login-error" class="auth-alert hidden"></div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" />
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" />
+        </div>
+        <button id="login-btn" class="btn-primary" onclick="App.login()">Sign In</button>
+      </div>
+
+      <!-- Register Form -->
+      <div id="register-form" class="form-section">
+        <div id="reg-error" class="auth-alert hidden"></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Name</label>
+            <input type="text" id="reg-name" placeholder="Alex" />
+          </div>
+          <div class="form-group">
+            <label>Email</label>
+            <input type="email" id="reg-email" placeholder="you@example.com" />
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="reg-password" placeholder="Min. 8 characters" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Age</label>
+            <input type="number" id="reg-age" placeholder="25" min="10" max="120" />
+          </div>
+          <div class="form-group">
+            <label>Gender</label>
+            <select id="reg-gender">
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Weight (kg)</label>
+            <input type="number" id="reg-weight" placeholder="70" step="0.1" min="20" max="300" />
+          </div>
+          <div class="form-group">
+            <label>Height (cm)</label>
+            <input type="number" id="reg-height" placeholder="175" min="100" max="250" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Activity</label>
+            <select id="reg-activity">
+              <option value="sedentary">Sedentary (desk job)</option>
+              <option value="light">Light (1-3×/week)</option>
+              <option value="moderate" selected>Moderate (3-5×/week)</option>
+              <option value="active">Very active (6-7×/week)</option>
+              <option value="very_active">Extremely active</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Goal</label>
+            <select id="reg-goal">
+              <option value="lose">Lose weight</option>
+              <option value="maintain" selected>Maintain</option>
+              <option value="gain">Gain weight</option>
+            </select>
+          </div>
+        </div>
+        <button id="register-btn" class="btn-primary" onclick="App.register()">Create Account</button>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ MAIN APP ══════════════════════════════════ -->
+<div id="app-screen" class="screen">
+
+  <!-- ════ LEFT SIDEBAR ════ -->
+  <aside class="app-sidebar">
+    <div class="sidebar-header">
+      <div class="sidebar-logo">
+        <div class="sidebar-logo-icon">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+          </svg>
+        </div>
+        <span class="sidebar-logo-text">NeoNutri</span>
+      </div>
+    </div>
+
+    <nav class="sidebar-nav">
+      <button class="nav-item active" data-tab="dashboard" onclick="App.switchTab('dashboard')">
+        <svg class="nav-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+          <polyline points="9 22 9 12 15 12 15 22"/>
+        </svg>
+        <span>Today</span>
+      </button>
+      <button class="nav-item" data-tab="fasting" onclick="App.switchTab('fasting')">
+        <svg class="nav-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+        <span>Fasting</span>
+      </button>
+      <button class="nav-item" data-tab="charts" onclick="App.switchTab('charts')">
+        <svg class="nav-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round">
+          <line x1="18" y1="20" x2="18" y2="10"/>
+          <line x1="12" y1="20" x2="12" y2="4"/>
+          <line x1="6" y1="20" x2="6" y2="14"/>
+        </svg>
+        <span>Progress</span>
+      </button>
+      <button class="nav-item" data-tab="profile" onclick="App.switchTab('profile')">
+        <svg class="nav-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+        <span>Profile</span>
+      </button>
+      <button class="nav-item" data-tab="chat" onclick="App.switchTab('chat')">
+        <svg class="nav-icon" viewBox="0 0 24 24" stroke-width="2" stroke-linecap="round">
+          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+        </svg>
+        <span>Chat</span>
+      </button>
+    </nav>
+
+    <div class="sidebar-footer">
+      <button class="sidebar-footer-btn" onclick="App.openSettings()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="3"/>
+          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+        </svg>
+        <span>Settings</span>
+      </button>
+      <button class="sidebar-footer-btn" onclick="App.logout()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+          <polyline points="16 17 21 12 16 7"/>
+          <line x1="21" y1="12" x2="9" y2="12"/>
+        </svg>
+        <span>Sign Out</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- ════ MAIN CONTENT ════ -->
+  <div class="main-content">
+
+  <!-- Top Bar -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <span class="topbar-title" id="topbar-tab-title">Today</span>
+    </div>
+    <div class="topbar-right">
+      <span id="topbar-date" class="topbar-date"></span>
+    </div>
+  </header>
+
+  <!-- ──────── TAB: Dashboard ──────── -->
+  <div id="tab-dashboard" class="tab-content active">
+    <div class="scroll-container">
+      <!-- Greeting & calorie ring -->
+      <section class="hero-section">
+        <div class="greeting">
+          <h2 id="greeting-text">Good morning!</h2>
+          <p id="greeting-sub">Here's your nutrition today</p>
+        </div>
+        <div class="calorie-ring-wrapper">
+          <canvas id="calorie-ring" width="180" height="180"></canvas>
+          <div class="ring-center">
+            <span id="ring-consumed" class="ring-cal">0</span>
+            <span class="ring-label">kcal</span>
+            <span id="ring-remaining" class="ring-remain">of 0</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Macro pills -->
+      <section class="macro-section">
+        <div class="macro-card glass">
+          <div class="macro-bar-wrap">
+            <div class="macro-bar protein-bar" id="bar-protein"></div>
+          </div>
+          <div class="macro-info">
+            <span class="macro-icon">🥩</span>
+            <div>
+              <span id="val-protein" class="macro-val">0g</span>
+              <span class="macro-name">Protein</span>
+            </div>
+          </div>
+        </div>
+        <div class="macro-card glass">
+          <div class="macro-bar-wrap">
+            <div class="macro-bar carbs-bar" id="bar-carbs"></div>
+          </div>
+          <div class="macro-info">
+            <span class="macro-icon">🌾</span>
+            <div>
+              <span id="val-carbs" class="macro-val">0g</span>
+              <span class="macro-name">Carbs</span>
+            </div>
+          </div>
+        </div>
+        <div class="macro-card glass">
+          <div class="macro-bar-wrap">
+            <div class="macro-bar fat-bar" id="bar-fat"></div>
+          </div>
+          <div class="macro-info">
+            <span class="macro-icon">🥑</span>
+            <div>
+              <span id="val-fat" class="macro-val">0g</span>
+              <span class="macro-name">Fat</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Fasting mini-widget -->
+      <div id="dash-fast-widget" class="fast-widget glass" onclick="App.switchTab('fasting')">
+        <div class="fast-widget-left">
+          <div id="dash-fast-icon" class="fast-dot idle"></div>
+          <div>
+            <span id="dash-fast-title" class="fast-widget-title">Start a fast</span>
+            <span id="dash-fast-sub" class="fast-widget-sub">Tap to open fasting timer</span>
+          </div>
+        </div>
+        <div id="dash-fast-timer" class="fast-widget-timer">—</div>
+      </div>
+
+      <!-- Notification prompt (shown when permission not yet asked) -->
+      <div id="notif-prompt" class="notif-prompt-card glass hidden">
+        <div class="notif-prompt-icon">🔔</div>
+        <div class="notif-prompt-text">
+          <strong>Enable meal reminders</strong>
+          <span>Get nudged at noon and in the evening if you haven't logged.</span>
+        </div>
+        <button class="btn-ghost" onclick="App.requestNotifications()">Enable</button>
+        <button class="icon-btn" onclick="App.dismissNotifPrompt()" title="Dismiss">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <!-- AI Daily Insight -->
+      <div class="insight-card glass" id="insight-card">
+        <div class="insight-header">
+          <span class="insight-tag">Today's tip</span>
+          <button class="icon-btn" id="insight-refresh" onclick="App.refreshInsight(); event.stopPropagation()" title="Refresh">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-4.95"/></svg>
+          </button>
+        </div>
+        <p id="insight-text" class="insight-text">Checking your progress…</p>
+      </div>
+
+      <!-- Today's meals -->
+      <section class="meals-section">
+        <div class="section-header">
+          <h3>Today's meals</h3>
+          <button class="btn-ghost" onclick="App.switchTab('camera')">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add
+          </button>
+        </div>
+        <div id="meals-list" class="meals-list">
+          <div class="empty-state">
+            <span class="empty-icon">🍽️</span>
+            <p>No meals logged yet today</p>
+            <button class="btn-primary sm" onclick="App.switchTab('camera')">Snap your first meal</button>
+          </div>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- ──────── TAB: Camera ──────── -->
+  <div id="tab-camera" class="tab-content">
+    <div class="scroll-container">
+      <div class="camera-header">
+        <h2>Log a meal</h2>
+        <p>Take a photo or upload from gallery</p>
+      </div>
+
+      <!-- Camera view -->
+      <div id="camera-area" class="camera-area glass">
+        <div id="camera-placeholder" class="camera-placeholder">
+          <video id="camera-video" autoplay muted playsinline class="hidden"></video>
+          <canvas id="camera-canvas" class="hidden"></canvas>
+          <img id="preview-img" class="hidden" alt="Food preview" />
+          <div id="camera-idle" class="camera-idle">
+            <div class="camera-icon-wrap">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </div>
+            <p>Tap to open camera or upload a photo</p>
+          </div>
+        </div>
+        <div class="camera-actions">
+          <button class="btn-cam-action" id="btn-open-camera" onclick="App.openCamera()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+            Camera
+          </button>
+          <button class="btn-cam-action" onclick="document.getElementById('file-input').click()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+            Upload
+          </button>
+          <button class="btn-cam-action accent hidden" id="btn-capture" onclick="App.capturePhoto()">
+            <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="8"/></svg>
+            Snap
+          </button>
+          <button class="btn-cam-action danger hidden" id="btn-retake" onclick="App.retakePhoto()">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+              <polyline points="1 4 1 10 7 10"/>
+              <path d="M3.51 15a9 9 0 1 0 .49-4.95"/>
+            </svg>
+            Retake
+          </button>
+        </div>
+        <input type="file" id="file-input" accept="image/*" class="hidden" onchange="App.handleFileUpload(event)" />
+      </div>
+
+      <!-- Optional note for AI context -->
+      <div id="snap-note-wrap" class="snap-note-wrap hidden">
+        <input type="text" id="snap-note" class="snap-note-input" placeholder="Optional: describe the portion, e.g. &ldquo;large bowl&rdquo; or &ldquo;half serving&rdquo;" maxlength="120" />
+      </div>
+
+      <!-- Analyze button -->
+      <button id="btn-analyze" class="btn-primary analyze-btn hidden" onclick="App.analyzeFood()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        Analyze with AI
+      </button>
+
+      <!-- Analyzing loader -->
+      <div id="analyzing-loader" class="analyzing-loader hidden">
+        <div class="loader-dots"><span></span><span></span><span></span></div>
+        <p>AI is analyzing your meal…</p>
+      </div>
+
+      <!-- Analysis result card -->
+      <div id="analysis-result" class="analysis-card glass hidden">
+        <div class="analysis-header">
+          <div>
+            <h3 id="result-name">Food Name</h3>
+            <p id="result-description" class="result-desc"></p>
+            <span id="result-serving" class="serving-badge"></span>
+          </div>
+          <div id="result-confidence" class="confidence-badge"></div>
+        </div>
+        <div class="result-macros">
+          <div class="result-macro-item calories">
+            <span id="res-calories" class="rm-value">0</span>
+            <span class="rm-unit">kcal</span>
+            <span class="rm-label">Calories</span>
+          </div>
+          <div class="result-macro-item protein">
+            <span id="res-protein" class="rm-value">0</span>
+            <span class="rm-unit">g</span>
+            <span class="rm-label">Protein</span>
+          </div>
+          <div class="result-macro-item carbs">
+            <span id="res-carbs" class="rm-value">0</span>
+            <span class="rm-unit">g</span>
+            <span class="rm-label">Carbs</span>
+          </div>
+          <div class="result-macro-item fat">
+            <span id="res-fat" class="rm-value">0</span>
+            <span class="rm-unit">g</span>
+            <span class="rm-label">Fat</span>
+          </div>
+        </div>
+
+        <!-- Edit fields -->
+        <div class="result-edit">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Food name</label>
+              <input type="text" id="edit-name" />
+            </div>
+            <div class="form-group amount-group">
+              <label>Amount</label>
+              <input type="number" id="edit-amount" value="1" min="0.25" max="20" step="0.25" oninput="App.updateAmount()" />
+            </div>
+            <div class="form-group">
+              <label>Meal type</label>
+              <select id="edit-meal-type">
+                <option value="breakfast">Breakfast</option>
+                <option value="lunch">Lunch</option>
+                <option value="dinner">Dinner</option>
+                <option value="snack" selected>Snack</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Calories</label>
+              <input type="number" id="edit-calories" min="0" />
+            </div>
+            <div class="form-group">
+              <label>Protein (g)</label>
+              <input type="number" id="edit-protein" min="0" step="0.1" />
+            </div>
+            <div class="form-group">
+              <label>Carbs (g)</label>
+              <input type="number" id="edit-carbs" min="0" step="0.1" />
+            </div>
+            <div class="form-group">
+              <label>Fat (g)</label>
+              <input type="number" id="edit-fat" min="0" step="0.1" />
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-primary" onclick="App.logFood()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+          Add to Log
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ──────── TAB: Chat ──────── -->
+  <div id="tab-chat" class="tab-content">
+    <div class="scroll-container">
+      <div class="section-header pad-top">
+        <h2>Ask your AI coach</h2>
+      </div>
+      <div id="chat-messages" class="chat-messages"></div>
+      <div class="chat-input-wrap">
+        <input type="text" id="chat-input" class="chat-input" placeholder="Ask about your meals, macros, goals…" maxlength="500" onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();App.sendChatMessage()}" />
+        <button class="chat-send-btn" onclick="App.sendChatMessage()" id="chat-send-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ──────── TAB: Fasting ──────── -->
+  <div id="tab-fasting" class="tab-content">
+    <div class="scroll-container">
+      <div class="section-header pad-top">
+        <h2>Intermittent Fasting</h2>
+        <button class="icon-btn" id="notif-btn" onclick="App.requestNotifications()" title="Enable reminders">
+          <svg id="notif-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+          </svg>
+        </button>
+      </div>
+
+      <!-- Timer card -->
+      <div class="fast-timer-card glass">
+        <div class="fast-timer-wrap">
+          <canvas id="fast-arc" width="220" height="220"></canvas>
+          <div class="fast-arc-center">
+            <span id="fast-time-display" class="fast-time">00:00:00</span>
+            <span id="fast-status-label" class="fast-status-sub">Not fasting</span>
+            <span id="fast-progress-pct" class="fast-pct"></span>
+          </div>
+        </div>
+
+        <!-- Protocol selector -->
+        <div id="fast-protocol-wrap">
+          <p class="fast-protocol-label">Choose your schedule</p>
+          <div class="fast-protocols">
+            <button class="proto-btn active" data-hours="16" data-proto="16:8" onclick="App.selectProtocol(this)">16:8</button>
+            <button class="proto-btn" data-hours="18" data-proto="18:6" onclick="App.selectProtocol(this)">18:6</button>
+            <button class="proto-btn" data-hours="20" data-proto="20:4" onclick="App.selectProtocol(this)">20:4</button>
+            <button class="proto-btn" data-hours="24" data-proto="24h" onclick="App.selectProtocol(this)">24h</button>
+            <button class="proto-btn" data-hours="0" data-proto="custom" onclick="App.selectProtocol(this)">Custom</button>
+          </div>
+          <div id="custom-hours-wrap" class="hidden">
+            <label style="margin-top:8px">Custom duration (hours)</label>
+            <input type="number" id="custom-hours-input" min="1" max="72" value="20" style="margin-top:6px" />
+          </div>
+          <div id="fast-eating-window" class="fast-eating-window"></div>
+        </div>
+
+        <button id="fast-action-btn" class="btn-primary" onclick="App.toggleFast()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Start Fast
+        </button>
+
+        <!-- End fast options (shown when active) -->
+        <div id="fast-end-options" class="hidden">
+          <div class="form-row" style="margin-top:12px">
+            <div class="form-group">
+              <label>How do you feel?</label>
+              <select id="fast-feeling">
+                <option value="great">Great</option>
+                <option value="good" selected>Good</option>
+                <option value="okay">Okay</option>
+                <option value="tough">Tough</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Note (optional)</label>
+              <input type="text" id="fast-note" placeholder="e.g. Coffee helped" />
+            </div>
+          </div>
+          <button class="btn-ghost danger-ghost" onclick="App.cancelFast()" style="width:100%;justify-content:center;margin-top:4px">
+            Cancel fast (don't log)
+          </button>
+        </div>
+      </div>
+
+      <!-- Fasting stats -->
+      <div id="fast-stats-row" class="stats-row" style="margin-bottom:14px"></div>
+
+      <!-- History -->
+      <div class="section-header">
+        <h3>Recent fasts</h3>
+      </div>
+      <div id="fast-history-list" class="fast-history-list"></div>
+    </div>
+  </div>
+
+  <!-- ──────── TAB: Charts ──────── -->
+  <div id="tab-charts" class="tab-content">
+    <div class="scroll-container">
+      <div class="section-header pad-top">
+        <h2>Your progress</h2>
+        <select id="chart-range" onchange="App.loadCharts()" class="range-select">
+          <option value="7">7 days</option>
+          <option value="14">14 days</option>
+          <option value="30" selected>30 days</option>
+        </select>
+      </div>
+
+      <div class="chart-card glass">
+        <h4>Daily Calories</h4>
+        <div class="chart-wrap">
+          <canvas id="calories-chart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card glass">
+        <h4>Proteins, Carbs &amp; Fat</h4>
+        <div class="chart-wrap">
+          <canvas id="macros-chart"></canvas>
+        </div>
+      </div>
+
+      <div class="chart-card glass">
+        <h4>Nutrient breakdown (average)</h4>
+        <div class="chart-wrap chart-wrap-sm">
+          <canvas id="pie-chart"></canvas>
+        </div>
+      </div>
+
+      <div id="chart-stats" class="stats-row"></div>
+    </div>
+  </div>
+
+  <!-- ──────── TAB: Profile ──────── -->
+  <div id="tab-profile" class="tab-content">
+    <div class="scroll-container">
+      <div class="profile-header">
+        <div class="profile-avatar" id="profile-avatar">A</div>
+        <h2 id="profile-name">Name</h2>
+        <p id="profile-email" class="profile-email">email</p>
+      </div>
+
+      <!-- BMI & Stats cards -->
+      <div class="stats-grid">
+        <div class="stat-card glass bmi-card">
+          <div class="stat-top">
+            <span class="stat-label">BMI</span>
+            <span id="bmi-category" class="bmi-badge">—</span>
+          </div>
+          <span id="bmi-value" class="stat-big">—</span>
+          <div class="bmi-scale">
+            <div class="bmi-track">
+              <div class="bmi-thumb" id="bmi-thumb"></div>
+            </div>
+            <div class="bmi-labels">
+              <span>Too thin</span><span>Healthy</span><span>Overweight</span><span>Obese</span>
+            </div>
+          </div>
+        </div>
+        <div class="stat-card glass">
+          <span class="stat-label">Your daily target</span>
+          <span id="stat-target" class="stat-big">— <small>kcal</small></span>
+        </div>
+        <div class="stat-card glass">
+          <span class="stat-label">Resting burn</span>
+          <span class="stat-sublabel">calories your body needs at rest</span>
+          <span id="stat-bmr" class="stat-big">— <small>kcal</small></span>
+        </div>
+        <div class="stat-card glass">
+          <span class="stat-label">Full day burn</span>
+          <span class="stat-sublabel">with your activity level included</span>
+          <span id="stat-tdee" class="stat-big">— <small>kcal</small></span>
+        </div>
+      </div>
+
+      <!-- Weight goal -->
+      <div class="weight-goal-card glass">
+        <div class="section-header" style="margin-bottom:14px">
+          <h3>Weight goal</h3>
+          <button class="btn-ghost" onclick="App.getWeightAnalysis()" id="wg-ai-btn">Get AI tips</button>
+        </div>
+        <div id="wg-progress-wrap" class="hidden">
+          <div class="wg-progress-bar-wrap">
+            <div class="wg-progress-bar" id="wg-bar"></div>
+            <div class="wg-progress-thumb" id="wg-thumb"></div>
+          </div>
+          <div class="wg-labels">
+            <span id="wg-start-label">—</span>
+            <span id="wg-current-label" class="wg-current">—</span>
+            <span id="wg-target-label">—</span>
+          </div>
+          <p id="wg-days-left" class="wg-days-left"></p>
+          <div id="wg-analysis-text" class="insight-text" style="margin-top:10px"></div>
+        </div>
+        <div id="wg-no-goal" class="">
+          <div class="form-row">
+            <div class="form-group">
+              <label>Target weight (kg)</label>
+              <input type="number" id="wg-target" step="0.1" placeholder="70" />
+            </div>
+            <div class="form-group">
+              <label>Target date</label>
+              <input type="date" id="wg-date" />
+            </div>
+          </div>
+          <button class="btn-primary" onclick="App.setWeightGoal()">Set Goal</button>
+        </div>
+        <!-- Quick weight log -->
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid var(--border)">
+          <div class="form-row" style="margin-bottom:0">
+            <div class="form-group">
+              <label>Log today's weight (kg)</label>
+              <input type="number" id="wg-log-weight" step="0.1" placeholder="70.5" />
+            </div>
+            <div style="display:flex;align-items:flex-end;padding-bottom:12px">
+              <button class="btn-ghost" onclick="App.logWeight()">Log</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════ Camera FAB ════ -->
+  <button class="fab-snap" onclick="App.switchTab('camera')" title="Log Food">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+      <circle cx="12" cy="13" r="4"/>
+    </svg>
+  </button>
+
+  </div><!-- end .main-content -->
+</div>
+
+<!-- ═══════════════════════════════ SETTINGS MODAL ═══════════════════════════════ -->
+<div class="modal-overlay" id="settings-overlay" style="display:none" onclick="if(event.target===this)App.closeSettings()">
+  <div class="settings-modal">
+    <div class="settings-header">
+      <h2>Settings</h2>
+      <button class="icon-btn" onclick="App.closeSettings()" title="Close">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </button>
+    </div>
+    <div class="settings-body">
+      <div class="settings-tabs">
+        <button class="stab active" data-stab="profile" onclick="App.switchSettingsTab('profile')">Profile</button>
+        <button class="stab" data-stab="ai" onclick="App.switchSettingsTab('ai')">AI Access</button>
+        <button class="stab" data-stab="account" onclick="App.switchSettingsTab('account')">Account</button>
+      </div>
+      <div class="settings-content">
+
+        <!-- Profile Panel -->
+        <div class="settings-panel" id="spanel-profile">
+          <h3>Personal details</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Name</label>
+              <input type="text" id="p-name" />
+            </div>
+            <div class="form-group">
+              <label>Age</label>
+              <input type="number" id="p-age" min="10" max="120" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Weight (kg)</label>
+              <input type="number" id="p-weight" step="0.1" />
+            </div>
+            <div class="form-group">
+              <label>Height (cm)</label>
+              <input type="number" id="p-height" />
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Gender</label>
+              <select id="p-gender">
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Activity level</label>
+              <select id="p-activity">
+                <option value="sedentary">Sedentary (desk job)</option>
+                <option value="light">Light (1-3×/week)</option>
+                <option value="moderate">Moderate (3-5×/week)</option>
+                <option value="active">Very active (6-7×/week)</option>
+                <option value="very_active">Extremely active</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label>My goal</label>
+            <select id="p-goal">
+              <option value="lose">Lose weight — ~500 kcal less/day</option>
+              <option value="maintain">Maintain current weight</option>
+              <option value="gain">Build up — ~300 kcal more/day</option>
+            </select>
+          </div>
+          <button class="btn-primary" id="save-profile-btn" onclick="App.saveProfile()">Save Changes</button>
+        </div>
+
+        <!-- AI Access Panel -->
+        <div class="settings-panel" id="spanel-ai" style="display:none">
+          <h3>AI assistant access</h3>
+          <p class="settings-helper">Connect Claude or any MCP client to your data with a personal API key.</p>
+          <div id="mcp-key-display" class="mcp-key-display hidden">
+            <code id="mcp-key-value"></code>
+            <button class="icon-btn" onclick="App.copyMcpKey()" title="Copy key">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+          <p id="mcp-key-hint" class="mcp-key-hint"></p>
+          <div class="mcp-key-actions">
+            <button class="btn-ghost" id="mcp-generate-btn" onclick="App.generateMcpKey()">Generate key</button>
+            <button class="btn-ghost danger-ghost hidden" id="mcp-revoke-btn" onclick="App.revokeMcpKey()">Revoke</button>
+          </div>
+          <div id="mcp-url-row" class="mcp-url-row hidden">
+            <span>SSE&nbsp;URL</span>
+            <code id="mcp-url-value"></code>
+            <button class="icon-btn" onclick="App.copyMcpUrl()" title="Copy URL">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- Account Panel -->
+        <div class="settings-panel" id="spanel-account" style="display:none">
+          <h3>Account</h3>
+          <div class="profile-info-row">
+            <div class="profile-avatar-sm" id="s-profile-avatar">?</div>
+            <div>
+              <p id="s-profile-name" style="font-weight:600"></p>
+              <p id="s-profile-email" style="font-size:13px;color:var(--text2)"></p>
+            </div>
+          </div>
+          <div class="settings-sep"></div>
+          <button class="btn-ghost danger-ghost" onclick="App.logout()" style="width:100%;justify-content:center;">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" style="width:14px;height:14px">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/>
+              <polyline points="16 17 21 12 16 7"/>
+              <line x1="21" y1="12" x2="9" y2="12"/>
+            </svg>
+            Sign Out
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════ TOAST ════════════════════════════════════════ -->
+<div id="toast" class="toast hidden"></div>
+
+<script src="/js/app.js?v=4"></script>
+</body>
+</html>
