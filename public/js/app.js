@@ -1467,13 +1467,6 @@ const App = (() => {
     }
   }
 
-  // ─── Service Worker ────────────────────────────────────────────
-  if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(console.error);
-    });
-  }
-
   // ─── Utils ─────────────────────────────────────────────────────
   function dataURItoBlob(uri) {
     const [meta, b64] = uri.split(',');
