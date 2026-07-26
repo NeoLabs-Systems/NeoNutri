@@ -10,6 +10,8 @@
 [![PWA](https://img.shields.io/badge/PWA-ready-6366f1?style=flat-square&logo=pwa&logoColor=white)](https://web.dev/progressive-web-apps/)
 [![License](https://img.shields.io/badge/License-MIT-a855f7?style=flat-square)](LICENSE)
 
+[![Join the NeoLabs Discord](https://img.shields.io/badge/Join%20NeoLabs-Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)](https://discord.gg/f59rg2RwUT)
+
 A self-hosted AI-powered nutrition tracker that runs on your own hardware.  
 Snap a photo of any meal — AI identifies the food and estimates calories, protein, carbs and fat in seconds.  
 No cloud. No subscription. No tracking. Just your data.
